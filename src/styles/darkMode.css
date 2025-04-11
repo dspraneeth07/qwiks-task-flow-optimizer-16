@@ -72,3 +72,76 @@ body, body * {
 .theme-transition {
   animation: rotate 0.5s ease;
 }
+
+/* Form element fixes for light theme */
+:root [data-dialog-content] {
+  background-color: #ffffff !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+:root .bg-popover,
+:root .popover-content {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e5e5 !important;
+}
+
+:root input, 
+:root textarea, 
+:root select {
+  background-color: #ffffff !important;
+  border-color: #d4d4d8 !important;
+  color: #000000 !important;
+}
+
+:root [data-radix-select-viewport],
+:root [role="listbox"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #e5e5e5 !important;
+}
+
+/* Label text color for better contrast in light mode */
+:root label, 
+:root .text-gray-700,
+:root .text-popover-foreground,
+:root .text-foreground {
+  color: #333333 !important;
+}
+
+/* Calendar styles for light mode */
+:root [role="dialog"] {
+  background-color: #ffffff !important;
+}
+
+:root .rdp-button {
+  color: #333333 !important;
+}
+
+:root .rdp-day_selected {
+  background-color: var(--qwix-purple) !important;
+  color: #ffffff !important;
+}
+
+:root .rdp-button:hover:not([disabled]) {
+  background-color: #f3f3f3 !important;
+}
+
+/* Darker borders for calendar cells */
+:root .rdp-cell {
+  border-color: #e5e5e5 !important;
+}
+
+/* Improved colors for badges */
+:root .badge {
+  color: #333333 !important;
+  border: 1px solid #d4d4d8 !important;
+}
+
+/* Enhanced focus states for inputs in light mode */
+:root input:focus,
+:root textarea:focus,
+:root select:focus,
+:root button:focus {
+  outline: 2px solid var(--qwix-purple) !important;
+  outline-offset: 2px !important;
+}

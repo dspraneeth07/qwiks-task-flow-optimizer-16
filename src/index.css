@@ -107,6 +107,19 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
+/* Force solid white background on dialogs in light mode */
+:root [data-dialog-content],
+:root [role="dialog"],
+:root .bg-popover {
+  background-color: #ffffff !important;
+}
+
+/* Force labels to have high contrast in light mode */
+:root label, 
+:root .text-gray-700 {
+  color: #333333;
+}
+
 /* Custom animations */
 .task-item {
   @apply transition-all duration-300;
@@ -134,6 +147,17 @@
 .recharts-text {
   fill: var(--foreground) !important;
   font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* Better contrast for chart labels in light mode */
+:root .recharts-text {
+  fill: #333333 !important;
+}
+
+:root .recharts-cartesian-axis-tick-value {
+  fill: #333333 !important;
+  font-weight: 600 !important;
 }
 
 /* Tooltip styling for charts */
@@ -178,3 +202,68 @@
   }
 }
 
+/* Enhanced form field styling for better visibility */
+.form-field {
+  @apply mb-4;
+}
+
+.form-field label {
+  @apply block mb-1 font-medium;
+}
+
+/* Real-time knowledge transfer animation */
+.knowledge-transfer-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #21d0b2, #9b87f5);
+  animation: moveParticle 3s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes moveParticle {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(100px) translateY(-50px);
+    opacity: 0;
+  }
+}
+
+/* SingularityNET feature highlight animation */
+.singularity-feature {
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.singularity-feature:hover {
+  border-color: #21d0b2;
+  box-shadow: 0 0 15px rgba(33, 208, 178, 0.2);
+}
+
+/* Task priority indicators with better contrast */
+.priority-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.priority-high {
+  background-color: #ef4444;
+}
+
+.priority-medium {
+  background-color: #f97316;
+}
+
+.priority-low {
+  background-color: #3b82f6;
+}
