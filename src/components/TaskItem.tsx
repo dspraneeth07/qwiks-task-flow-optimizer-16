@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PencilIcon, Trash2Icon, CheckCircleIcon, AlertTriangleIcon, ClockIcon } from 'lucide-react';
+import { PencilIcon, Trash2Icon, CheckCircleIcon, AlertTriangleIcon, ClockIcon, CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { canTaskStart } from '../utils/taskScheduler';
+import TaskTimer from './TaskTimer';
+import { useToast } from "@/hooks/use-toast";
 
 interface TaskItemProps {
   task: Task;
@@ -28,6 +30,7 @@ const TaskItem = ({
 }: TaskItemProps) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const canStart = canTaskStart(task, allTasks);
+  const { toast } = useToast();
   
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -61,22 +64,39 @@ const TaskItem = ({
     }
     
     if (daysUntilDeadline === 0) {
-      return <span className="text-amber-600 text-sm">Due today</span>;
+      return <span className="text-amber-600 text-sm flex items-center">
+        <CalendarIcon className="h-4 w-4 mr-1" />
+        Due today
+      </span>;
     }
     
     if (daysUntilDeadline === 1) {
-      return <span className="text-amber-600 text-sm">Due tomorrow</span>;
+      return <span className="text-amber-600 text-sm flex items-center">
+        <CalendarIcon className="h-4 w-4 mr-1" />
+        Due tomorrow
+      </span>;
     }
     
-    return <span className="text-gray-600 text-sm">Due in {daysUntilDeadline} days</span>;
+    return <span className="text-gray-600 text-sm flex items-center">
+      <CalendarIcon className="h-4 w-4 mr-1" />
+      Due in {daysUntilDeadline} days
+    </span>;
+  };
+  
+  const handleTimeUp = () => {
+    toast({
+      title: "Time's up!",
+      description: `The allocated time for "${task.title}" has ended.`,
+      variant: "destructive"
+    });
   };
   
   return (
-    <Card className={`mb-4 task-item border-l-4 transition-all ${
+    <Card className={`mb-4 task-item border-l-4 transition-all shadow-sm hover:shadow-md ${
       task.completed 
         ? 'border-l-gray-300 opacity-70' 
         : isRecommended
-          ? 'border-l-qwix-purple shadow-md border-l-4'
+          ? 'border-l-qwix-purple shadow-md border-l-4 animate-pulse'
           : canStart
             ? 'border-l-qwix-blue'
             : 'border-l-gray-400'
@@ -89,7 +109,7 @@ const TaskItem = ({
               onCheckedChange={(checked) => {
                 onToggleComplete(task.id, checked === true);
               }}
-              className={`mt-1 ${task.completed ? 'bg-qwix-purple border-qwix-purple' : ''}`}
+              className={`mt-1 transform hover:scale-110 transition-transform ${task.completed ? 'bg-qwix-purple border-qwix-purple' : ''}`}
             />
             <div>
               <CardTitle className={`${task.completed ? 'line-through text-gray-500' : ''}`}>
@@ -121,11 +141,12 @@ const TaskItem = ({
       </CardHeader>
       <CardContent className="pb-2">
         <div className="flex flex-col sm:flex-row gap-2 justify-between text-sm">
-          <div className="flex items-center">
-            {task.estimatedTime && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            {task.estimatedTime && !task.completed && (
               <span className="flex items-center text-gray-600 mr-4">
                 <ClockIcon className="h-4 w-4 mr-1" />
-                {task.estimatedTime} min
+                Estimated: {task.estimatedTime} min
+                <span className="ml-2 text-xs text-gray-500">(Time required to complete)</span>
               </span>
             )}
             {task.deadline && getDeadlineText()}
@@ -136,7 +157,23 @@ const TaskItem = ({
               Waiting on dependencies
             </Badge>
           )}
+
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {task.tags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                  #{tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
+        
+        {!task.completed && task.estimatedTime && (
+          <div className="mt-3">
+            <TaskTimer task={task} onTimeUp={handleTimeUp} />
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <div className="flex justify-end gap-2 w-full">
@@ -163,7 +200,7 @@ const TaskItem = ({
                 variant="outline" 
                 size="sm" 
                 onClick={() => onEdit(task)}
-                className="hover:border-qwix-purple hover:text-qwix-purple"
+                className="hover:border-qwix-purple hover:text-qwix-purple hover:bg-qwix-purple/10 transition-colors"
               >
                 <PencilIcon className="h-4 w-4 mr-1" /> Edit
               </Button>
@@ -171,7 +208,7 @@ const TaskItem = ({
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowConfirmDelete(true)}
-                className="hover:border-red-500 hover:text-red-500"
+                className="hover:border-red-500 hover:text-red-500 hover:bg-red-50 transition-colors"
               >
                 <Trash2Icon className="h-4 w-4 mr-1" /> Delete
               </Button>

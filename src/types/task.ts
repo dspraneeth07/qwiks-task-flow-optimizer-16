@@ -12,8 +12,9 @@ export interface Task {
   estimatedTime?: number; // In minutes
   createdAt: Date;
   completedAt?: Date;
-  tags?: string[]; // New: Added tags for categorization
-  actualTime?: number; // New: Time actually spent on the task (in minutes)
+  tags?: string[]; // Added tags for categorization
+  actualTime?: number; // Time actually spent on the task (in minutes)
+  startedAt?: Date; // When the task was started
 }
 
 export interface TaskLink {
@@ -21,11 +22,18 @@ export interface TaskLink {
   target: string; // Target task ID
 }
 
-// New: Task statistics for analytics
+// Task statistics for analytics
 export interface TaskStats {
   totalTasks: number;
   completedTasks: number;
   overdueTasks: number;
   upcomingDeadlines: number;
   avgCompletionTime: number;
+  estimatedVsActualRatio: number;
+  priorityDistribution: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+  tagDistribution: Record<string, number>;
 }

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { PlusIcon, StarsIcon, InfoIcon } from 'lucide-react';
+import { PlusIcon, InfoIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
   Tooltip, 
@@ -9,6 +9,7 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import QwixLogo from './QwixLogo';
 
 interface HeaderProps {
   onAddTask: () => void;
@@ -25,8 +26,6 @@ const Header = ({
   overdueTasks = 0,
   upcomingDeadlines = 0
 }: HeaderProps) => {
-  const [isHovering, setIsHovering] = useState(false);
-  
   const completionRate = tasksCount > 0 
     ? Math.round((completedCount / tasksCount) * 100) 
     : 0;
@@ -34,30 +33,15 @@ const Header = ({
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white rounded-lg shadow-sm mb-6 animate-fade-in">
       <div className="flex items-center mb-4 sm:mb-0">
-        <div
-          className={cn(
-            "mr-3 p-2 rounded-full bg-qwix-purple/10 transition-all duration-300",
-            isHovering && "rotate-12"
-          )}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          <StarsIcon size={28} className="text-qwix-purple" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Qwix To Do</h1>
-          <p className="text-gray-500 text-sm">
-            Smart scheduling for maximum productivity
-          </p>
-        </div>
+        <QwixLogo size="md" />
       </div>
       
       <div className="flex items-center justify-between w-full sm:w-auto gap-4 flex-wrap">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-center">
-                <p className="text-xl font-semibold">{tasksCount}</p>
+              <div className="stat-card text-center bg-gradient-to-br from-blue-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <p className="text-xl font-semibold text-blue-600">{tasksCount}</p>
                 <p className="text-xs text-gray-500">Total Tasks</p>
               </div>
             </TooltipTrigger>
@@ -70,8 +54,8 @@ const Header = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="text-center">
-                <p className="text-xl font-semibold">{completedCount}</p>
+              <div className="stat-card text-center bg-gradient-to-br from-green-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <p className="text-xl font-semibold text-green-600">{completedCount}</p>
                 <p className="text-xs text-gray-500">Completed</p>
               </div>
             </TooltipTrigger>
@@ -85,7 +69,7 @@ const Header = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="text-center">
+                <div className="stat-card text-center bg-gradient-to-br from-red-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
                   <p className="text-xl font-semibold text-red-500">{overdueTasks}</p>
                   <p className="text-xs text-gray-500">Overdue</p>
                 </div>
@@ -101,7 +85,7 @@ const Header = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="text-center">
+                <div className="stat-card text-center bg-gradient-to-br from-amber-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
                   <p className="text-xl font-semibold text-amber-500">{upcomingDeadlines}</p>
                   <p className="text-xs text-gray-500">Due Soon</p>
                 </div>
@@ -115,7 +99,7 @@ const Header = ({
         
         <Button 
           onClick={onAddTask} 
-          className="bg-qwix-purple hover:bg-qwix-purple-dark"
+          className="bg-gradient-to-r from-qwix-purple to-qwix-blue hover:from-qwix-purple-dark hover:to-qwix-purple text-white shadow-md hover:shadow-lg transition-all animate-pulse"
         >
           <PlusIcon size={18} className="mr-1" /> New Task
         </Button>

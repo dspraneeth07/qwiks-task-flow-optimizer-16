@@ -11,7 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getDependencyLinks } from '../utils/taskScheduler';
 import DependencyGraph from '../components/DependencyGraph';
-import { ListIcon, NetworkIcon } from 'lucide-react';
+import { ListIcon, NetworkIcon, BarChartIcon } from 'lucide-react';
+import TaskAnalytics from '../components/TaskAnalytics';
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -39,6 +40,17 @@ const Index = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState("list");
   const { toast } = useToast();
+  
+  // Calculate overdue and upcoming deadline tasks
+  const overdueTasks = tasks.filter(
+    task => !task.completed && task.deadline && new Date() > task.deadline
+  ).length;
+  
+  const upcomingDeadlines = tasks.filter(
+    task => !task.completed && task.deadline && 
+    new Date() < task.deadline && 
+    new Date().getTime() + (48 * 60 * 60 * 1000) > task.deadline.getTime()
+  ).length;
   
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -83,6 +95,7 @@ const Index = () => {
       deadline: taskData.deadline,
       dependencies: taskData.dependencies || [],
       estimatedTime: taskData.estimatedTime,
+      tags: taskData.tags || [],
       createdAt: new Date()
     };
     
@@ -92,6 +105,41 @@ const Index = () => {
       title: "Task Created",
       description: "New task has been added to your list."
     });
+    
+    // If the new task has a time estimate, offer to start timer
+    if (newTask.estimatedTime) {
+      setTimeout(() => {
+        toast({
+          title: "Start Timer?",
+          description: `Would you like to start working on "${newTask.title}" now?`,
+          action: (
+            <Button 
+              onClick={() => playStartSound(newTask.title)}
+              size="sm" 
+              className="bg-qwix-purple"
+            >
+              Start
+            </Button>
+          ),
+        });
+      }, 1000);
+    }
+  };
+  
+  const playStartSound = (taskTitle: string) => {
+    // Play a sound
+    const audio = new Audio();
+    audio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
+    audio.play().catch(e => console.error("Error playing sound:", e));
+    
+    // Speech synthesis
+    if ('speechSynthesis' in window) {
+      const speech = new SpeechSynthesisUtterance(`Starting task: ${taskTitle}. Your timer has begun.`);
+      speech.volume = 1;
+      speech.rate = 1;
+      speech.pitch = 1;
+      window.speechSynthesis.speak(speech);
+    }
   };
   
   const handleDeleteTask = (taskId: string) => {
@@ -126,19 +174,45 @@ const Index = () => {
   };
   
   const handleToggleComplete = (taskId: string, completed: boolean) => {
-    setTasks(prevTasks => 
-      prevTasks.map(task => 
-        task.id === taskId 
-          ? { 
-              ...task, 
-              completed, 
-              completedAt: completed ? new Date() : undefined 
-            } 
-          : task
-      )
-    );
+    const currentTime = new Date();
+    
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.map(task => {
+        if (task.id !== taskId) return task;
+        
+        // If completing the task, calculate the actual time spent if possible
+        let actualTime = task.actualTime;
+        if (completed && task.estimatedTime && !task.actualTime) {
+          // For demo purposes, simulate some actual time recording
+          // In a real app, this would come from a timer that tracked the real time
+          actualTime = Math.floor(task.estimatedTime * (0.7 + Math.random() * 0.6)); // 70-130% of estimate
+        }
+        
+        return {
+          ...task,
+          completed,
+          completedAt: completed ? currentTime : undefined,
+          actualTime: completed ? actualTime : undefined
+        };
+      });
+      
+      return updatedTasks;
+    });
     
     const taskTitle = tasks.find(t => t.id === taskId)?.title || 'Task';
+    
+    if (completed) {
+      // Play a sound for completion
+      const audio = new Audio();
+      audio.src = "https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3";
+      audio.play().catch(e => console.error("Error playing sound:", e));
+      
+      // Speak task completion
+      if ('speechSynthesis' in window) {
+        const speech = new SpeechSynthesisUtterance(`Congratulations! You've completed the task: ${taskTitle}.`);
+        window.speechSynthesis.speak(speech);
+      }
+    }
     
     toast({
       title: completed ? "Task Completed" : "Task Reopened",
@@ -152,11 +226,13 @@ const Index = () => {
   const dependencyLinks = getDependencyLinks(tasks);
   
   return (
-    <div className="min-h-screen bg-qwix-bg-light p-4 sm:p-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 max-w-5xl mx-auto">
       <Header 
         onAddTask={handleAddTask} 
         tasksCount={tasks.length} 
-        completedCount={tasks.filter(t => t.completed).length} 
+        completedCount={tasks.filter(t => t.completed).length}
+        overdueTasks={overdueTasks}
+        upcomingDeadlines={upcomingDeadlines}
       />
       
       <TaskForm 
@@ -169,14 +245,18 @@ const Index = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex justify-end mb-4">
-          <TabsList>
-            <TabsTrigger value="list" className="flex items-center gap-1">
+          <TabsList className="bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="list" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
               <ListIcon className="h-4 w-4" />
               <span className="hidden sm:inline">List View</span>
             </TabsTrigger>
-            <TabsTrigger value="graph" className="flex items-center gap-1">
+            <TabsTrigger value="graph" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
               <NetworkIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Dependency View</span>
+              <span className="hidden sm:inline">Dependencies</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+              <BarChartIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -191,7 +271,7 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="graph">
-          <Card className="p-4 h-[500px]">
+          <Card className="p-4 h-[500px] shadow-sm bg-white">
             {tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">No tasks to visualize</h3>
@@ -221,6 +301,10 @@ const Index = () => {
               />
             )}
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="analytics">
+          <TaskAnalytics tasks={tasks} />
         </TabsContent>
       </Tabs>
     </div>
