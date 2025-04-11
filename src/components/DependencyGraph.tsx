@@ -1,0 +1,174 @@
+
+import { useEffect, useRef } from 'react';
+import { Task, TaskLink } from '../types/task';
+
+interface DependencyGraphProps {
+  tasks: Task[];
+  links: TaskLink[];
+}
+
+const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  
+  // Convert tasks to nodes for visualization
+  const nodes = tasks.map(task => ({
+    id: task.id,
+    title: task.title,
+    completed: task.completed,
+    priority: task.priority
+  }));
+  
+  useEffect(() => {
+    if (links.length === 0 || !svgRef.current) return;
+    
+    const svg = svgRef.current;
+    const width = svg.clientWidth;
+    const height = svg.clientHeight;
+    
+    // Clear previous elements
+    while (svg.firstChild) {
+      svg.removeChild(svg.firstChild);
+    }
+    
+    // Create a simple force-directed layout
+    const nodeRadius = 40;
+    const nodeSpacing = 120;
+    const nodePositions: Record<string, { x: number, y: number }> = {};
+    
+    // Position nodes in a circle
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2.5;
+    
+    nodes.forEach((node, index) => {
+      const angle = (index / nodes.length) * 2 * Math.PI;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      nodePositions[node.id] = { x, y };
+    });
+    
+    // Draw the links (arrows) first so they're behind nodes
+    links.forEach(link => {
+      const sourcePos = nodePositions[link.source];
+      const targetPos = nodePositions[link.target];
+      
+      if (!sourcePos || !targetPos) return;
+      
+      // Calculate the direction vector
+      const dx = targetPos.x - sourcePos.x;
+      const dy = targetPos.y - sourcePos.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      
+      // Normalize the vector
+      const ndx = dx / length;
+      const ndy = dy / length;
+      
+      // Calculate start and end points, adjusted to node boundaries
+      const startX = sourcePos.x + ndx * nodeRadius;
+      const startY = sourcePos.y + ndy * nodeRadius;
+      const endX = targetPos.x - ndx * nodeRadius;
+      const endY = targetPos.y - ndy * nodeRadius;
+      
+      // Create arrow path
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M${startX},${startY} L${endX},${endY}`);
+      path.classList.add('dependency-line');
+      
+      // Create arrowhead
+      const arrowMarker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      arrowMarker.setAttribute('id', `arrowhead-${link.source}-${link.target}`);
+      arrowMarker.setAttribute('markerWidth', '10');
+      arrowMarker.setAttribute('markerHeight', '7');
+      arrowMarker.setAttribute('refX', '10');
+      arrowMarker.setAttribute('refY', '3.5');
+      arrowMarker.setAttribute('orient', 'auto');
+      
+      const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+      polygon.setAttribute('fill', '#9b87f5');
+      arrowMarker.appendChild(polygon);
+      
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      defs.appendChild(arrowMarker);
+      svg.appendChild(defs);
+      
+      path.setAttribute('marker-end', `url(#arrowhead-${link.source}-${link.target})`);
+      svg.appendChild(path);
+    });
+    
+    // Draw the nodes
+    nodes.forEach(node => {
+      const pos = nodePositions[node.id];
+      if (!pos) return;
+      
+      // Create node group
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${pos.x}, ${pos.y})`);
+      
+      // Create node circle
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('r', String(nodeRadius));
+      circle.setAttribute('fill', node.completed ? '#f1f0fb' : '#9b87f5');
+      circle.setAttribute('stroke', node.completed ? '#ddd' : '#7E69AB');
+      circle.setAttribute('stroke-width', '2');
+      
+      // Add task title text
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('fill', node.completed ? '#888' : 'white');
+      text.setAttribute('font-size', '10px');
+      text.setAttribute('font-weight', 'bold');
+      
+      // Split title into words
+      const words = node.title.split(' ');
+      let currentLine = '';
+      let lineNumber = 0;
+      
+      words.forEach((word, i) => {
+        const testLine = currentLine + word + ' ';
+        
+        // Check if we need to create a new line
+        if (i > 0 && testLine.length > 10) {
+          const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+          tspan.setAttribute('x', '0');
+          tspan.setAttribute('dy', lineNumber === 0 ? '-0.6em' : '1.2em');
+          tspan.textContent = currentLine.trim();
+          text.appendChild(tspan);
+          
+          currentLine = word + ' ';
+          lineNumber++;
+        } else {
+          currentLine = testLine;
+        }
+      });
+      
+      // Add the last line
+      if (currentLine.trim()) {
+        const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+        tspan.setAttribute('x', '0');
+        tspan.setAttribute('dy', lineNumber === 0 ? '-0.6em' : '1.2em');
+        tspan.textContent = currentLine.trim();
+        text.appendChild(tspan);
+      }
+      
+      g.appendChild(circle);
+      g.appendChild(text);
+      svg.appendChild(g);
+    });
+    
+  }, [tasks, links, nodes]);
+  
+  return (
+    <div className="w-full h-full relative">
+      <svg 
+        ref={svgRef} 
+        className="w-full h-full" 
+        viewBox="0 0 600 400"
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </div>
+  );
+};
+
+export default DependencyGraph;
