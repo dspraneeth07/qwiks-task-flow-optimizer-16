@@ -289,8 +289,9 @@ const Index = () => {
         </TabsContent>
       </Tabs>
 
-      <footer className="mt-8 pb-4 text-center text-sm text-gray-500">
-        <p>Developed by Team QwikZen</p>
+      <footer className="mt-8 pb-4 text-center">
+        <p className="text-sm font-medium text-gray-700">Developed by Team QwikZen</p>
+        <p className="text-xs text-gray-500 mt-1">Task Management and Scheduling Solution</p>
       </footer>
     </div>
   );

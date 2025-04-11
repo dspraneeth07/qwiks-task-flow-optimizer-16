@@ -1,9 +1,10 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Task } from '@/types/task';
-import { AlarmClockIcon, BellIcon } from 'lucide-react';
+import { AlarmClockIcon, BellIcon, VolumeXIcon, Volume2Icon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from './ui/button';
 
 interface TaskTimerProps {
   task: Task;
@@ -15,6 +16,9 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
   const [isActive, setIsActive] = useState(false);
   const [percentCompleted, setPercentCompleted] = useState(100);
   const [hasPlayedAlertAt10Percent, setHasPlayedAlertAt10Percent] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [speechEnabled, setSpeechEnabled] = useState(true);
+  const audioInitialized = useRef(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -44,8 +48,12 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
         
         // Alert at 10% remaining
         if (newPercentCompleted <= 10 && !hasPlayedAlertAt10Percent) {
-          playAlertSound();
-          speakTaskReminder(task, 10);
+          if (audioEnabled) {
+            playAlertSound();
+          }
+          if (speechEnabled) {
+            speakTaskReminder(task, 10);
+          }
           setHasPlayedAlertAt10Percent(true);
           toast({
             title: "Almost out of time!",
@@ -56,8 +64,12 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
         
         // Time's up
         if (newTimeRemaining <= 0) {
-          playAlertSound();
-          speakTaskReminder(task, 0);
+          if (audioEnabled) {
+            playAlertSound();
+          }
+          if (speechEnabled) {
+            speakTaskReminder(task, 0);
+          }
           onTimeUp();
           clearInterval(interval!);
         }
@@ -70,7 +82,7 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeRemaining, task, onTimeUp, hasPlayedAlertAt10Percent]);
+  }, [isActive, timeRemaining, task, onTimeUp, hasPlayedAlertAt10Percent, audioEnabled, speechEnabled]);
   
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -79,7 +91,28 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
   };
   
   const toggleTimer = () => {
+    // Initialize audio on first user interaction
+    if (!audioInitialized.current) {
+      initializeAudio();
+      audioInitialized.current = true;
+    }
     setIsActive(!isActive);
+  };
+  
+  const initializeAudio = () => {
+    // Create a silent audio context to enable audio
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        const audioCtx = new AudioContext();
+        const oscillator = audioCtx.createOscillator();
+        oscillator.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(0.001);
+      }
+    } catch (e) {
+      console.error("Error initializing audio context:", e);
+    }
   };
   
   // Get color based on percentage
@@ -90,6 +123,8 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
   };
   
   const playAlertSound = () => {
+    if (!audioEnabled) return;
+    
     try {
       const audio = new Audio();
       audio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
@@ -104,16 +139,24 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
         playPromise.catch(e => {
           // Auto-play was prevented
           console.log("Audio play was prevented by the browser", e);
+          setAudioEnabled(false);
+          toast({
+            title: "Audio Permission Required",
+            description: "Please enable audio permissions to hear task alerts.",
+            variant: "default"
+          });
         });
       }
     } catch (e) {
       console.error("Error playing sound:", e);
+      setAudioEnabled(false);
     }
   };
   
   const speakTaskReminder = (task: Task, percentRemaining: number) => {
-    if (!('speechSynthesis' in window)) {
+    if (!speechEnabled || !('speechSynthesis' in window)) {
       console.error("Speech synthesis not supported");
+      setSpeechEnabled(false);
       return;
     }
     
@@ -141,7 +184,20 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
       window.speechSynthesis.speak(speech);
     } catch (e) {
       console.error("Error with speech synthesis:", e);
+      setSpeechEnabled(false);
     }
+  };
+  
+  const toggleAudio = () => {
+    setAudioEnabled(!audioEnabled);
+    if (!audioEnabled && !audioInitialized.current) {
+      initializeAudio();
+      audioInitialized.current = true;
+    }
+  };
+  
+  const toggleSpeech = () => {
+    setSpeechEnabled(!speechEnabled);
   };
   
   if (timeRemaining === null || task.completed) return null;
@@ -159,12 +215,21 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
             {isActive ? formatTime(timeRemaining) : `${task.estimatedTime} min`}
           </span>
         </div>
-        <button 
-          onClick={toggleTimer}
-          className="text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
-        >
-          {isActive ? "Pause" : "Start"}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggleAudio}
+            className="text-xs p-1 rounded-md hover:bg-gray-100 transition-colors"
+            title={audioEnabled ? "Mute Sound" : "Enable Sound"}
+          >
+            {audioEnabled ? <Volume2Icon size={14} /> : <VolumeXIcon size={14} />}
+          </button>
+          <button 
+            onClick={toggleTimer}
+            className="text-xs px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            {isActive ? "Pause" : "Start"}
+          </button>
+        </div>
       </div>
       
       {isActive && (
