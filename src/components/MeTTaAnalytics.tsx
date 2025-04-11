@@ -23,7 +23,7 @@ interface MeTTaAnalyticsProps {
 }
 
 const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
-  const [activationData, setActivationData] = useState<{name: string; value: number; color: string}[]>([]);
+  const [activationData, setActivationData] = useState<{name: string; value: number; color: string; fullTitle: string}[]>([]);
   const [atomStats, setAtomStats] = useState({
     taskNodes: 0,
     dependencyLinks: 0,
@@ -80,15 +80,15 @@ const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
   
   if (tasks.length === 0) {
     return (
-      <Card className="shadow-sm">
+      <Card className="shadow-sm dark:bg-gray-800">
         <CardHeader>
           <CardTitle>MeTTa Analytics</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="p-8 flex items-center justify-center">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">No Tasks Available</h3>
-              <p className="text-gray-500">Add some tasks to see MeTTa analytics</p>
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No Tasks Available</h3>
+              <p className="text-gray-500 dark:text-gray-400">Add some tasks to see MeTTa analytics</p>
             </div>
           </div>
         </CardContent>
@@ -97,34 +97,34 @@ const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
   }
   
   return (
-    <Card className="shadow-sm">
+    <Card className="shadow-sm dark:bg-gray-800">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>MeTTa Graph Analytics</span>
-          <Badge variant="outline" className="ml-2 bg-qwix-purple/10 text-qwix-purple">
+          <Badge variant="outline" className="ml-2 bg-qwix-purple/10 text-qwix-purple dark:bg-qwix-purple/20 dark:text-qwix-purple-light">
             Powered by MeTTa
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 mb-4 grid-cols-3">
-          <div className="bg-qwix-purple/10 p-4 rounded-lg">
-            <div className="text-xl font-bold text-qwix-purple">{atomStats.taskNodes}</div>
-            <div className="text-sm text-gray-500">Task Nodes</div>
+          <div className="bg-qwix-purple/10 dark:bg-qwix-purple/20 p-4 rounded-lg">
+            <div className="text-xl font-bold text-qwix-purple dark:text-qwix-purple-light">{atomStats.taskNodes}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Task Nodes</div>
           </div>
-          <div className="bg-qwix-blue/10 p-4 rounded-lg">
-            <div className="text-xl font-bold text-qwix-blue">{atomStats.dependencyLinks}</div>
-            <div className="text-sm text-gray-500">Dependency Links</div>
+          <div className="bg-qwix-blue/10 dark:bg-qwix-blue/20 p-4 rounded-lg">
+            <div className="text-xl font-bold text-qwix-blue dark:text-qwix-blue-light">{atomStats.dependencyLinks}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Dependency Links</div>
           </div>
-          <div className="bg-gray-100 p-4 rounded-lg">
-            <div className="text-xl font-bold text-gray-700">{atomStats.totalAtoms}</div>
-            <div className="text-sm text-gray-500">Total Atoms</div>
+          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
+            <div className="text-xl font-bold text-gray-700 dark:text-gray-300">{atomStats.totalAtoms}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Total Atoms</div>
           </div>
         </div>
         
         <div className="pt-2">
-          <h4 className="text-sm font-semibold mb-2">Task Activation Values (MeTTa)</h4>
-          <p className="text-xs text-gray-500 mb-4">
+          <h4 className="text-sm font-semibold mb-2 dark:text-gray-300">Task Activation Values (MeTTa)</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
             Higher values indicate tasks that should be prioritized according to MeTTa's spreading activation algorithm
           </p>
           
@@ -141,14 +141,16 @@ const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
                     textAnchor="end" 
                     height={70} 
                     tickMargin={10}
+                    tick={{ fill: 'var(--foreground)' }}
                   />
                   <YAxis 
                     label={{ 
                       value: 'Activation', 
                       angle: -90, 
                       position: 'insideLeft',
-                      style: { textAnchor: 'middle' }
+                      style: { textAnchor: 'middle', fill: 'var(--foreground)' }
                     }} 
+                    tick={{ fill: 'var(--foreground)' }}
                   />
                   <Tooltip 
                     formatter={(value: number) => [`${value} activation`, 'MeTTa Value']}
@@ -159,6 +161,7 @@ const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
                       }
                       return name;
                     }}
+                    contentStyle={{ background: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
                   />
                   <Bar dataKey="value" name="Activation Value">
                     {activationData.map((entry, index) => (
@@ -169,7 +172,7 @@ const MeTTaAnalytics = ({ tasks }: MeTTaAnalyticsProps) => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               No activation data available
             </div>
           )}

@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { PlusIcon, InfoIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -10,6 +9,8 @@ import {
   TooltipTrigger 
 } from "@/components/ui/tooltip";
 import QwixLogo from './QwixLogo';
+import ThemeToggle from './ThemeToggle';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   onAddTask: () => void;
@@ -31,7 +32,7 @@ const Header = ({
     : 0;
   
   return (
-    <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white rounded-lg shadow-sm mb-6 animate-fade-in">
+    <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6 animate-fade-in">
       <div className="flex items-center mb-4 sm:mb-0">
         <QwixLogo size="md" />
       </div>
@@ -40,9 +41,9 @@ const Header = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="stat-card text-center bg-gradient-to-br from-blue-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
-                <p className="text-xl font-semibold text-blue-600">{tasksCount}</p>
-                <p className="text-xs text-gray-500">Total Tasks</p>
+              <div className="stat-card text-center bg-gradient-to-br from-blue-50 to-white dark:from-blue-900/30 dark:to-gray-800 p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <p className="text-xl font-semibold text-blue-600 dark:text-blue-400">{tasksCount}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Total Tasks</p>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -54,9 +55,9 @@ const Header = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="stat-card text-center bg-gradient-to-br from-green-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
-                <p className="text-xl font-semibold text-green-600">{completedCount}</p>
-                <p className="text-xs text-gray-500">Completed</p>
+              <div className="stat-card text-center bg-gradient-to-br from-green-50 to-white dark:from-green-900/30 dark:to-gray-800 p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <p className="text-xl font-semibold text-green-600 dark:text-green-400">{completedCount}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Completed</p>
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -69,9 +70,9 @@ const Header = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="stat-card text-center bg-gradient-to-br from-red-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <div className="stat-card text-center bg-gradient-to-br from-red-50 to-white dark:from-red-900/30 dark:to-gray-800 p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
                   <p className="text-xl font-semibold text-red-500">{overdueTasks}</p>
-                  <p className="text-xs text-gray-500">Overdue</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Overdue</p>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -85,9 +86,9 @@ const Header = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="stat-card text-center bg-gradient-to-br from-amber-50 to-white p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
+                <div className="stat-card text-center bg-gradient-to-br from-amber-50 to-white dark:from-amber-900/30 dark:to-gray-800 p-3 rounded-lg shadow-sm transform transition-all hover:scale-105 hover:shadow-md">
                   <p className="text-xl font-semibold text-amber-500">{upcomingDeadlines}</p>
-                  <p className="text-xs text-gray-500">Due Soon</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Due Soon</p>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -97,12 +98,27 @@ const Header = ({
           </TooltipProvider>
         )}
         
-        <Button 
-          onClick={onAddTask} 
-          className="bg-gradient-to-r from-qwix-purple to-qwix-blue hover:from-qwix-purple-dark hover:to-qwix-purple text-white shadow-md hover:shadow-lg transition-all animate-pulse"
-        >
-          <PlusIcon size={18} className="mr-1" /> New Task
-        </Button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          
+          <Link to="/about">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-8 w-8 rounded-full"
+            >
+              <InfoIcon className="h-4 w-4" />
+              <span className="sr-only">About</span>
+            </Button>
+          </Link>
+          
+          <Button 
+            onClick={onAddTask} 
+            className="bg-gradient-to-r from-qwix-purple to-qwix-blue hover:from-qwix-purple-dark hover:to-qwix-purple text-white shadow-md hover:shadow-lg transition-all animate-pulse dark:text-white"
+          >
+            <PlusIcon size={18} className="mr-1" /> New Task
+          </Button>
+        </div>
       </div>
     </header>
   );

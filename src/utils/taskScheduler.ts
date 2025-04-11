@@ -1,3 +1,4 @@
+
 import { Task } from "../types/task";
 import { 
   tasksToAtoms, 
@@ -190,4 +191,24 @@ export const estimateCompletionDates = (tasks: Task[], avgTasksPerDay: number): 
   });
   
   return estimates;
+};
+
+// Calculate time efficiency (more accurate - for all completed tasks)
+export const calculateTimeEfficiency = (tasks: Task[]): number => {
+  const completedTasks = tasks.filter(task => task.completed && task.estimatedTime && task.actualTime);
+  
+  if (completedTasks.length === 0) {
+    return 100; // Default to 100% when no completed tasks with both times
+  }
+  
+  const totalEstimated = completedTasks.reduce((sum, task) => sum + (task.estimatedTime || 0), 0);
+  const totalActual = completedTasks.reduce((sum, task) => sum + (task.actualTime || 0), 0);
+  
+  if (totalActual === 0) {
+    return 100; // Avoid division by zero
+  }
+  
+  // Calculate efficiency as the ratio of estimated to actual time
+  // Capped at 200% for reasonable display purposes
+  return Math.min(Math.round((totalEstimated / totalActual) * 100), 200);
 };

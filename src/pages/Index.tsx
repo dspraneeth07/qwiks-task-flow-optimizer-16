@@ -1,14 +1,16 @@
+
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Task } from '../types/task';
 import Header from '../components/Header';
 import TaskList from '../components/TaskList';
 import TaskForm from '../components/TaskForm';
+import Footer from '../components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { getDependencyLinks } from '../utils/taskScheduler';
+import { getDependencyLinks, calculateTimeEfficiency } from '../utils/taskScheduler';
 import DependencyGraph from '../components/DependencyGraph';
 import { ListIcon, NetworkIcon, BarChartIcon, BrainIcon } from 'lucide-react';
 import TaskAnalytics from '../components/TaskAnalytics';
@@ -168,9 +170,14 @@ const Index = () => {
       const updatedTasks = prevTasks.map(task => {
         if (task.id !== taskId) return task;
         
-        let actualTime = task.actualTime;
-        if (completed && task.estimatedTime && !task.actualTime) {
-          actualTime = Math.floor(task.estimatedTime * (0.7 + Math.random() * 0.6));
+        let actualTime: number | undefined = task.actualTime;
+        
+        // Calculate actual time based on realistic values
+        if (completed && task.estimatedTime) {
+          // For realism, generate a value that's reasonably close to estimated time
+          // but with some variation (between 70% and 130% of estimated)
+          const variationFactor = 0.7 + (Math.random() * 0.6); // between 0.7 and 1.3
+          actualTime = Math.round(task.estimatedTime * variationFactor);
         }
         
         return {
@@ -208,7 +215,7 @@ const Index = () => {
   const dependencyLinks = getDependencyLinks(tasks);
   
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 max-w-5xl mx-auto">
       <Header 
         onAddTask={handleAddTask} 
         tasksCount={tasks.length} 
@@ -227,20 +234,20 @@ const Index = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex justify-end mb-4">
-          <TabsList className="bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="list" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+          <TabsList className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+            <TabsTrigger value="list" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple dark:text-gray-300 dark:data-[state=active]:text-qwix-purple">
               <ListIcon className="h-4 w-4" />
               <span className="hidden sm:inline">List View</span>
             </TabsTrigger>
-            <TabsTrigger value="graph" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+            <TabsTrigger value="graph" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple dark:text-gray-300 dark:data-[state=active]:text-qwix-purple">
               <NetworkIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Dependencies</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+            <TabsTrigger value="analytics" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple dark:text-gray-300 dark:data-[state=active]:text-qwix-purple">
               <BarChartIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="metta" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+            <TabsTrigger value="metta" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple dark:text-gray-300 dark:data-[state=active]:text-qwix-purple">
               <BrainIcon className="h-4 w-4" />
               <span className="hidden sm:inline">MeTTa</span>
             </TabsTrigger>
@@ -257,10 +264,10 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="graph">
-          <Card className="p-4 h-[500px] shadow-sm bg-white">
+          <Card className="p-4 h-[500px] shadow-sm bg-white dark:bg-gray-800">
             {tasks.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No tasks to visualize</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No tasks to visualize</h3>
                 <p className="text-gray-500 mb-4">Add some tasks to see their dependencies</p>
                 <Button 
                   onClick={handleAddTask} 
@@ -271,7 +278,7 @@ const Index = () => {
               </div>
             ) : dependencyLinks.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">No dependencies defined</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No dependencies defined</h3>
                 <p className="text-gray-500 mb-4">Create tasks with dependencies to visualize them</p>
                 <Button 
                   onClick={handleAddTask} 
@@ -290,7 +297,10 @@ const Index = () => {
         </TabsContent>
         
         <TabsContent value="analytics">
-          <TaskAnalytics tasks={tasks} />
+          <TaskAnalytics 
+            tasks={tasks} 
+            timeEfficiency={calculateTimeEfficiency(tasks)}
+          />
         </TabsContent>
         
         <TabsContent value="metta">
@@ -298,10 +308,7 @@ const Index = () => {
         </TabsContent>
       </Tabs>
 
-      <footer className="mt-8 pb-4 text-center">
-        <p className="text-sm font-medium text-gray-700">Developed by Team QwikZen</p>
-        <p className="text-xs text-gray-500 mt-1">Task Management with MeTTa-powered Scheduling</p>
-      </footer>
+      <Footer />
     </div>
   );
 };

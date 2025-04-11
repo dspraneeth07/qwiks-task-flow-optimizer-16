@@ -1,73 +1,108 @@
-# Welcome to your Lovable project
 
-## Project info
+# Qwix To Do: Intelligent Task Management
 
-**URL**: https://lovable.dev/projects/05db4b50-eb6f-4fea-96ee-864e9f9e3b19
+![Qwix To Do](public/brain-circuit.svg)
 
-## How can I edit this code?
+## About the Project
 
-There are several ways of editing your application.
+Qwix To Do is an advanced task management application that uses MeTTa principles for intelligent task scheduling and optimization. The application employs graph-based knowledge representation to create optimized task schedules based on dependencies, priorities, and deadlines.
 
-**Use Lovable**
+## Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/05db4b50-eb6f-4fea-96ee-864e9f9e3b19) and start prompting.
+- **MeTTa-powered Task Scheduling**: Utilizes graph-based knowledge representation for optimized task ordering
+- **Dependency Visualization**: Interactive graph visualization showing task dependencies
+- **Intelligent Priority Calculation**: Uses spreading activation algorithms to determine task priorities
+- **Time Tracking & Efficiency**: Real-time tracking of estimated vs. actual task completion time
+- **Comprehensive Analytics**: Detailed data visualizations for task status, priority distribution, and time efficiency
+- **Dark Mode Support**: System-matched or manually selected theme options
 
-Changes made via Lovable will be committed automatically to this repo.
+## Technology Stack
 
-**Use your preferred IDE**
+- **Frontend**: React with TypeScript for type-safe development
+- **State Management**: React Hooks and Context for efficient state management
+- **Styling**: Tailwind CSS for rapid, responsive UI development
+- **UI Components**: shadcn/ui for beautifully designed, accessible components
+- **Data Visualization**: Recharts for comprehensive analytics and dependencies visualization
+- **AI Framework**: Custom MeTTa implementation for intelligent task prioritization
+- **Build Tool**: Vite for fast development and optimized builds
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## MeTTa Integration
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The project implements several core MeTTa concepts:
 
-Follow these steps:
+1. **Graph Representation**: Tasks and dependencies are represented as nodes and links in a custom AtomSpace
+2. **AtomSpace Manipulation**: Functions for adding, removing, and querying atoms in the knowledge graph
+3. **Spreading Activation**: Algorithm for calculating priorities by propagating "activation energy" through the dependency network
+4. **Topological Sorting**: Tasks are ordered based on their dependencies to ensure proper sequencing
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## SingularityNET Alignment
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+The project aligns with SingularityNET principles by:
+- Using symbolic AI representation (AtomSpace)
+- Implementing graph-based reasoning
+- Focusing on knowledge representation and manipulation
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Getting Started
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Prerequisites
+
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/dspraneeth07/qwix-todo.git
+
+# Navigate to the project directory
+cd qwix-todo
+
+# Install dependencies
+npm install
+
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Create tasks with titles, descriptions, priorities, and deadlines
+2. Establish dependencies between tasks
+3. View the recommended task order in the list view
+4. Track task completion and time efficiency
+5. Analyze task performance in the analytics tab
+6. Visualize task dependencies in the graph view
+7. Explore MeTTa task activation values in the dedicated tab
 
-**Use GitHub Codespaces**
+## Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+src/
+├── components/        # UI components
+├── hooks/             # Custom React hooks
+├── pages/             # Application pages
+├── services/          # MeTTa service implementation
+├── styles/            # Global styles
+├── types/             # TypeScript type definitions
+└── utils/             # Utility functions
+```
 
-## What technologies are used for this project?
+## Future Enhancements
 
-This project is built with:
+- External AtomSpace database integration
+- Enhanced MeTTa reasoning capabilities
+- Mobile application
+- Team collaboration features
+- Integration with external calendar and project management tools
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Contributors
 
-## How can I deploy this project?
+- **Dhadi Sai Praneeth Reddy** - [GitHub](https://github.com/dspraneeth07)
+- **Kasireddy Manideep Reddy** - [GitHub](https://github.com/dspraneeth07)
 
-Simply open [Lovable](https://lovable.dev/projects/05db4b50-eb6f-4fea-96ee-864e9f9e3b19) and click on Share -> Publish.
+## License
 
-## Can I connect a custom domain to my Lovable project?
+This project is developed by Team QwikZen for the SingularityNET hackathon.
 
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+© 2023 QwikZen Group India. All rights reserved.

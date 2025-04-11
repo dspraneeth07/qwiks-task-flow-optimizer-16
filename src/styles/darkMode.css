@@ -1,0 +1,74 @@
+
+:root {
+  --foreground: #1a1a1a;
+  --background: #f5f5f5;
+  --card-bg: #ffffff;
+  --border: #e5e5e5;
+  --muted: #f0f0f0;
+  --muted-foreground: #888888;
+  
+  --qwix-purple: #9b87f5;
+  --qwix-purple-dark: #7d68d3;
+  --qwix-purple-light: #b8a6ff;
+  --qwix-blue: #0ea5e9;
+  --qwix-blue-light: #38bdf8;
+}
+
+/* Dark mode colors */
+.dark {
+  --foreground: #ffffff;
+  --background: #121212;
+  --card-bg: #1e1e1e;
+  --border: #333333;
+  --muted: #2a2a2a;
+  --muted-foreground: #a0a0a0;
+}
+
+/* Apply the correct CSS variables */
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+/* Transition for smooth theme switching */
+body, body * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.1s ease;
+}
+
+/* Dark mode scrollbar styling */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #444444;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}
+
+/* Override for recharts text color in dark mode */
+.dark .recharts-text {
+  fill: var(--foreground);
+}
+
+/* Animation for theme toggle */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.theme-transition {
+  animation: rotate 0.5s ease;
+}

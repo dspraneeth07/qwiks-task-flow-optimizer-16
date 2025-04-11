@@ -50,7 +50,7 @@ const QwixLogo = ({ size = 'md' }: QwixLogoProps) => {
         <h1 className={`${sizeMap[size].title} font-bold bg-gradient-to-r from-qwix-purple to-qwix-blue-light text-transparent bg-clip-text`}>
           Qwix To Do
         </h1>
-        <p className={`${sizeMap[size].subtitle} text-gray-500`}>
+        <p className={`${sizeMap[size].subtitle} text-gray-500 dark:text-gray-400`}>
           Smart scheduling for maximum productivity
         </p>
       </div>
