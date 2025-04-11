@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Task } from '../types/task';
@@ -16,12 +15,10 @@ import TaskAnalytics from '../components/TaskAnalytics';
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
-    // Load tasks from localStorage on initial mount
     const savedTasks = localStorage.getItem('qwixTasks');
     if (savedTasks) {
       try {
         const parsedTasks = JSON.parse(savedTasks);
-        // Convert string dates back to Date objects
         return parsedTasks.map((task: any) => ({
           ...task,
           createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
@@ -41,7 +38,6 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("list");
   const { toast } = useToast();
   
-  // Calculate overdue and upcoming deadline tasks
   const overdueTasks = tasks.filter(
     task => !task.completed && task.deadline && new Date() > task.deadline
   ).length;
@@ -52,7 +48,6 @@ const Index = () => {
     new Date().getTime() + (48 * 60 * 60 * 1000) > task.deadline.getTime()
   ).length;
   
-  // Save tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('qwixTasks', JSON.stringify(tasks));
   }, [tasks]);
@@ -68,7 +63,6 @@ const Index = () => {
   };
   
   const handleSaveTask = (taskData: Partial<Task>) => {
-    // If editing an existing task
     if (taskData.id) {
       setTasks(prevTasks => 
         prevTasks.map(task => 
@@ -85,7 +79,6 @@ const Index = () => {
       return;
     }
     
-    // Creating a new task
     const newTask: Task = {
       id: uuidv4(),
       title: taskData.title || 'Untitled Task',
@@ -106,7 +99,6 @@ const Index = () => {
       description: "New task has been added to your list."
     });
     
-    // If the new task has a time estimate, offer to start timer
     if (newTask.estimatedTime) {
       setTimeout(() => {
         toast({
@@ -127,12 +119,10 @@ const Index = () => {
   };
   
   const playStartSound = (taskTitle: string) => {
-    // Play a sound
     const audio = new Audio();
     audio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
     audio.play().catch(e => console.error("Error playing sound:", e));
     
-    // Speech synthesis
     if ('speechSynthesis' in window) {
       const speech = new SpeechSynthesisUtterance(`Starting task: ${taskTitle}. Your timer has begun.`);
       speech.volume = 1;
@@ -143,13 +133,11 @@ const Index = () => {
   };
   
   const handleDeleteTask = (taskId: string) => {
-    // Check if any other tasks depend on this one
     const dependentTasks = tasks.filter(t => 
       t.dependencies && t.dependencies.includes(taskId)
     );
     
     if (dependentTasks.length > 0) {
-      // Remove this task from dependencies of other tasks
       setTasks(prevTasks => 
         prevTasks.map(task => ({
           ...task,
@@ -164,7 +152,6 @@ const Index = () => {
       });
     }
     
-    // Delete the task
     setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
     
     toast({
@@ -180,12 +167,9 @@ const Index = () => {
       const updatedTasks = prevTasks.map(task => {
         if (task.id !== taskId) return task;
         
-        // If completing the task, calculate the actual time spent if possible
         let actualTime = task.actualTime;
         if (completed && task.estimatedTime && !task.actualTime) {
-          // For demo purposes, simulate some actual time recording
-          // In a real app, this would come from a timer that tracked the real time
-          actualTime = Math.floor(task.estimatedTime * (0.7 + Math.random() * 0.6)); // 70-130% of estimate
+          actualTime = Math.floor(task.estimatedTime * (0.7 + Math.random() * 0.6));
         }
         
         return {
@@ -202,12 +186,10 @@ const Index = () => {
     const taskTitle = tasks.find(t => t.id === taskId)?.title || 'Task';
     
     if (completed) {
-      // Play a sound for completion
       const audio = new Audio();
       audio.src = "https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3";
       audio.play().catch(e => console.error("Error playing sound:", e));
       
-      // Speak task completion
       if ('speechSynthesis' in window) {
         const speech = new SpeechSynthesisUtterance(`Congratulations! You've completed the task: ${taskTitle}.`);
         window.speechSynthesis.speak(speech);
@@ -222,7 +204,6 @@ const Index = () => {
     });
   };
 
-  // Calculate tasks that have all dependencies completed
   const dependencyLinks = getDependencyLinks(tasks);
   
   return (
@@ -307,6 +288,10 @@ const Index = () => {
           <TaskAnalytics tasks={tasks} />
         </TabsContent>
       </Tabs>
+
+      <footer className="mt-8 pb-4 text-center text-sm text-gray-500">
+        <p>Developed by Team QwikZen</p>
+      </footer>
     </div>
   );
 };

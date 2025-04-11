@@ -40,16 +40,16 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
 
   // Priority distribution data for chart  
   const priorityData = [
-    { name: "High", value: tasks.filter(t => t.priority === 'high').length },
-    { name: "Medium", value: tasks.filter(t => t.priority === 'medium').length },
-    { name: "Low", value: tasks.filter(t => t.priority === 'low').length },
+    { name: "High", value: tasks.filter(t => t.priority === 'high').length, color: "#ea384c" },
+    { name: "Medium", value: tasks.filter(t => t.priority === 'medium').length, color: "#0EA5E9" },
+    { name: "Low", value: tasks.filter(t => t.priority === 'low').length, color: "#22c55e" },
   ];
   
   // Status distribution data for chart
   const statusData = [
-    { name: "Completed", value: completedTasks.length },
-    { name: "In Progress", value: incompleteTasks.length - overdueTasks.length },
-    { name: "Overdue", value: overdueTasks.length },
+    { name: "Completed", value: completedTasks.length, color: "#22c55e" },
+    { name: "In Progress", value: incompleteTasks.length - overdueTasks.length, color: "#0EA5E9" },
+    { name: "Overdue", value: overdueTasks.length, color: "#ea384c" },
   ];
   
   // Time comparison data (estimated vs actual) for completed tasks with both times
@@ -62,7 +62,24 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
     }))
     .slice(0, 5); // Only show the 5 most recent for clarity
   
-  const COLORS = ['#9b87f5', '#0EA5E9', '#ea384c', '#22c55e'];
+  const renderCustomizedPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+    const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+    const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+  
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="black" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={12}
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
   
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -125,7 +142,7 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
           <CardTitle>Priority Distribution</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <div className="w-full h-[200px]">
+          <div className="w-full h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -133,17 +150,21 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={renderCustomizedPieLabel}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Legend 
+                  layout="horizontal" 
+                  verticalAlign="bottom"
+                  align="center"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -156,7 +177,7 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
           <CardTitle>Task Status</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <div className="w-full h-[200px]">
+          <div className="w-full h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -164,17 +185,21 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={renderCustomizedPieLabel}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Legend 
+                  layout="horizontal" 
+                  verticalAlign="bottom" 
+                  align="center"
+                  wrapperStyle={{ paddingTop: '20px' }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -206,6 +231,11 @@ const TaskAnalytics = ({ tasks }: TaskAnalyticsProps) => {
           </CardContent>
         </Card>
       )}
+      
+      {/* Footer */}
+      <div className="md:col-span-2 text-center text-sm text-gray-500 mt-2">
+        Developed by Team QwikZen
+      </div>
     </div>
   );
 };

@@ -15,6 +15,8 @@ export interface Task {
   tags?: string[]; // Added tags for categorization
   actualTime?: number; // Time actually spent on the task (in minutes)
   startedAt?: Date; // When the task was started
+  timerActive?: boolean; // Whether the timer is currently active
+  timeRemaining?: number; // Time remaining in seconds
 }
 
 export interface TaskLink {

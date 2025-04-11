@@ -70,7 +70,7 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
     }
     
     // Create a simple force-directed layout
-    const nodeRadius = 40;
+    const nodeRadius = 45; // Increased node size for better text fit
     const nodeSpacing = 120;
     const nodePositions: Record<string, { x: number, y: number }> = {};
     
@@ -174,37 +174,45 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
       text.setAttribute('font-size', '10px');
       text.setAttribute('font-weight', 'bold');
       
-      // Split title into words
-      const words = node.title.split(' ');
-      let currentLine = '';
-      let lineNumber = 0;
+      // Process title for better fit
+      const title = node.title;
+      const maxLineLength = 12; // Maximum characters per line
       
-      words.forEach((word, i) => {
-        const testLine = currentLine + word + ' ';
-        
-        // Check if we need to create a new line
-        if (i > 0 && testLine.length > 10) {
-          const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-          tspan.setAttribute('x', '0');
-          tspan.setAttribute('dy', lineNumber === 0 ? '-0.6em' : '1.2em');
-          tspan.textContent = currentLine.trim();
-          text.appendChild(tspan);
-          
-          currentLine = word + ' ';
-          lineNumber++;
-        } else {
+      // Split title into words and build lines that fit
+      const words = title.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
+      
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (testLine.length <= maxLineLength) {
           currentLine = testLine;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = word;
         }
       });
       
       // Add the last line
-      if (currentLine.trim()) {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      // If title is too long, truncate it
+      const maxLines = 3;
+      const displayLines = lines.slice(0, maxLines);
+      if (lines.length > maxLines) {
+        displayLines[maxLines - 1] = displayLines[maxLines - 1].substring(0, 8) + '...';
+      }
+      
+      // Add the lines to the text element
+      displayLines.forEach((line, index) => {
         const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
         tspan.setAttribute('x', '0');
-        tspan.setAttribute('dy', lineNumber === 0 ? '-0.6em' : '1.2em');
-        tspan.textContent = currentLine.trim();
+        tspan.setAttribute('dy', index === 0 ? '-1em' : '1.2em');
+        tspan.textContent = line;
         text.appendChild(tspan);
-      }
+      });
       
       g.appendChild(circle);
       g.appendChild(text);
@@ -251,6 +259,9 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       />
+      <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+        Developed by Team QwikZen
+      </div>
     </div>
   );
 };

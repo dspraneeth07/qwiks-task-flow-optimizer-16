@@ -14,6 +14,7 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [percentCompleted, setPercentCompleted] = useState(100);
+  const [hasPlayedAlertAt10Percent, setHasPlayedAlertAt10Percent] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -21,6 +22,7 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
     if (task.estimatedTime && !task.completed) {
       setTimeRemaining(task.estimatedTime * 60); // Convert minutes to seconds
       setPercentCompleted(100);
+      setHasPlayedAlertAt10Percent(false);
     } else {
       setTimeRemaining(null);
       setPercentCompleted(100);
@@ -41,9 +43,10 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
         setPercentCompleted(newPercentCompleted);
         
         // Alert at 10% remaining
-        if (newPercentCompleted === 10) {
+        if (newPercentCompleted <= 10 && !hasPlayedAlertAt10Percent) {
           playAlertSound();
           speakTaskReminder(task, 10);
+          setHasPlayedAlertAt10Percent(true);
           toast({
             title: "Almost out of time!",
             description: `Only 10% of time remains for task: ${task.title}`,
@@ -67,7 +70,7 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, timeRemaining, task, onTimeUp]);
+  }, [isActive, timeRemaining, task, onTimeUp, hasPlayedAlertAt10Percent]);
   
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -87,9 +90,25 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
   };
   
   const playAlertSound = () => {
-    const audio = new Audio();
-    audio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"; // Replace with actual sound URL
-    audio.play().catch(e => console.error("Error playing sound:", e));
+    try {
+      const audio = new Audio();
+      audio.src = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
+      
+      // Set volume to a reasonable level
+      audio.volume = 0.7;
+      
+      // Play the audio without awaiting user interaction
+      const playPromise = audio.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(e => {
+          // Auto-play was prevented
+          console.log("Audio play was prevented by the browser", e);
+        });
+      }
+    } catch (e) {
+      console.error("Error playing sound:", e);
+    }
   };
   
   const speakTaskReminder = (task: Task, percentRemaining: number) => {
@@ -98,23 +117,31 @@ const TaskTimer = ({ task, onTimeUp }: TaskTimerProps) => {
       return;
     }
     
-    let message = "";
-    if (percentRemaining === 0) {
-      message = `Time's up for task: ${task.title}. Have you completed it?`;
-      
-      // Check dependencies
-      if (task.dependencies && task.dependencies.length > 0) {
-        message += " There are tasks depending on this. Please complete it soon.";
+    try {
+      let message = "";
+      if (percentRemaining === 0) {
+        message = `Time's up for task: ${task.title}. Have you completed it?`;
+        
+        // Check dependencies
+        if (task.dependencies && task.dependencies.length > 0) {
+          message += " There are tasks depending on this. Please complete it soon.";
+        }
+      } else {
+        message = `Only ${percentRemaining}% of time remains for task: ${task.title}. Please try to finish soon.`;
       }
-    } else {
-      message = `Only ${percentRemaining}% of time remains for task: ${task.title}. Please try to finish soon.`;
+      
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+      
+      const speech = new SpeechSynthesisUtterance(message);
+      speech.volume = 0.8;
+      speech.rate = 1;
+      speech.pitch = 1;
+      
+      window.speechSynthesis.speak(speech);
+    } catch (e) {
+      console.error("Error with speech synthesis:", e);
     }
-    
-    const speech = new SpeechSynthesisUtterance(message);
-    speech.volume = 1;
-    speech.rate = 1;
-    speech.pitch = 1;
-    window.speechSynthesis.speak(speech);
   };
   
   if (timeRemaining === null || task.completed) return null;
