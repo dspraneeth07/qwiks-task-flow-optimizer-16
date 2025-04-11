@@ -1,5 +1,9 @@
-
 import { Task } from "../types/task";
+import { 
+  tasksToAtoms, 
+  calculateMettaPriority, 
+  getMettaTaskSchedule 
+} from "../services/mettaService";
 
 // Check if a task can be started based on its dependencies
 export const canTaskStart = (task: Task, allTasks: Task[]): boolean => {
@@ -15,8 +19,25 @@ export const canTaskStart = (task: Task, allTasks: Task[]): boolean => {
   });
 };
 
-// Calculate task priority score (higher means should be done sooner)
-export const calculateTaskPriority = (task: Task): number => {
+// Calculate task priority score using MeTTa approach when available
+export const calculateTaskPriority = (task: Task, allTasks?: Task[]): number => {
+  // Use MeTTa service if all tasks are provided
+  if (allTasks && allTasks.length > 0) {
+    try {
+      // Convert tasks to MeTTa representation
+      tasksToAtoms(allTasks);
+      // Get priorities using MeTTa algorithm
+      const priorities = calculateMettaPriority(allTasks);
+      // Normalize to 0-100 scale for compatibility
+      const priority = priorities.get(task.id) || 0;
+      return Math.round(priority * 100);
+    } catch (error) {
+      console.error("MeTTa priority calculation failed:", error);
+      // Fall back to traditional calculation if MeTTa fails
+    }
+  }
+  
+  // Traditional calculation as fallback
   let score = 0;
   
   // Priority factor
@@ -54,15 +75,24 @@ export const calculateTaskPriority = (task: Task): number => {
     score += timeFactor;
   }
   
-  // New: Consider "ready to start" tasks (no blocking dependencies)
-  const readyBonus = task.dependencies.length === 0 ? 15 : 0;
+  // Consider "ready to start" tasks (no blocking dependencies)
+  const readyBonus = task.dependencies && task.dependencies.length === 0 ? 15 : 0;
   score += readyBonus;
   
   return score;
 };
 
-// Get the optimized task order
+// Get the optimized task order using MeTTa algorithms when available
 export const getOptimizedTaskOrder = (tasks: Task[]): Task[] => {
+  // Use MeTTa-based scheduling if available
+  try {
+    return getMettaTaskSchedule(tasks);
+  } catch (error) {
+    console.error("MeTTa task scheduling failed:", error);
+    // Fall back to traditional scheduling if MeTTa fails
+  }
+  
+  // Traditional implementation as fallback
   const incompleteTasks = tasks.filter(task => !task.completed);
   const completedTasks = tasks.filter(task => task.completed);
   
@@ -79,7 +109,7 @@ export const getOptimizedTaskOrder = (tasks: Task[]): Task[] => {
   });
   
   // Sort ready tasks by priority score
-  readyTasks.sort((a, b) => calculateTaskPriority(b) - calculateTaskPriority(a));
+  readyTasks.sort((a, b) => calculateTaskPriority(b, tasks) - calculateTaskPriority(a, tasks));
   
   // For blocked tasks, we'll sort them by dependencies and priority
   // However, they'll be shown after ready tasks
@@ -89,7 +119,7 @@ export const getOptimizedTaskOrder = (tasks: Task[]): Task[] => {
     // Check if a depends on b
     if (a.dependencies.includes(b.id)) return 1;
     // Otherwise, sort by priority
-    return calculateTaskPriority(b) - calculateTaskPriority(a);
+    return calculateTaskPriority(b, tasks) - calculateTaskPriority(a, tasks);
   });
   
   // Return the optimized order: ready tasks first, then blocked tasks, then completed tasks
@@ -121,7 +151,7 @@ export const getDependencyLinks = (tasks: Task[]) => {
   return links;
 };
 
-// New: Calculate current workload distribution
+// Calculate current workload distribution
 export const calculateWorkloadDistribution = (tasks: Task[]): Record<string, number> => {
   const workload: Record<string, number> = {
     high: 0,
@@ -138,7 +168,7 @@ export const calculateWorkloadDistribution = (tasks: Task[]): Record<string, num
   return workload;
 };
 
-// New: Estimate completion dates based on average completion rate
+// Estimate completion dates based on average completion rate
 export const estimateCompletionDates = (tasks: Task[], avgTasksPerDay: number): Record<string, Date> => {
   const estimates: Record<string, Date> = {};
   const incompleteTasks = tasks.filter(task => !task.completed);

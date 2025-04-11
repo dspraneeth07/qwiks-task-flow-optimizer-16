@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getDependencyLinks } from '../utils/taskScheduler';
 import DependencyGraph from '../components/DependencyGraph';
-import { ListIcon, NetworkIcon, BarChartIcon } from 'lucide-react';
+import { ListIcon, NetworkIcon, BarChartIcon, BrainIcon } from 'lucide-react';
 import TaskAnalytics from '../components/TaskAnalytics';
+import MeTTaAnalytics from '../components/MeTTaAnalytics';
 
 const Index = () => {
   const [tasks, setTasks] = useState<Task[]>(() => {
@@ -239,6 +240,10 @@ const Index = () => {
               <BarChartIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
+            <TabsTrigger value="metta" className="flex items-center gap-1 data-[state=active]:bg-qwix-purple/10 data-[state=active]:text-qwix-purple">
+              <BrainIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">MeTTa</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -287,11 +292,15 @@ const Index = () => {
         <TabsContent value="analytics">
           <TaskAnalytics tasks={tasks} />
         </TabsContent>
+        
+        <TabsContent value="metta">
+          <MeTTaAnalytics tasks={tasks} />
+        </TabsContent>
       </Tabs>
 
       <footer className="mt-8 pb-4 text-center">
         <p className="text-sm font-medium text-gray-700">Developed by Team QwikZen</p>
-        <p className="text-xs text-gray-500 mt-1">Task Management and Scheduling Solution</p>
+        <p className="text-xs text-gray-500 mt-1">Task Management with MeTTa-powered Scheduling</p>
       </footer>
     </div>
   );
