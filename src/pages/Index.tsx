@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Task } from '../types/task';
@@ -172,11 +171,8 @@ const Index = () => {
         
         let actualTime: number | undefined = task.actualTime;
         
-        // Calculate actual time based on realistic values
         if (completed && task.estimatedTime) {
-          // For realism, generate a value that's reasonably close to estimated time
-          // but with some variation (between 70% and 130% of estimated)
-          const variationFactor = 0.7 + (Math.random() * 0.6); // between 0.7 and 1.3
+          const variationFactor = 0.7 + (Math.random() * 0.6);
           actualTime = Math.round(task.estimatedTime * variationFactor);
         }
         
@@ -187,6 +183,16 @@ const Index = () => {
           actualTime: completed ? actualTime : undefined
         };
       });
+      
+      setTimeout(() => {
+        setActiveTab(prevTab => {
+          if (prevTab === "metta" && completed) {
+            setActiveTab("analytics");
+            setTimeout(() => setActiveTab("metta"), 100);
+          }
+          return prevTab;
+        });
+      }, 500);
       
       return updatedTasks;
     });
@@ -202,6 +208,22 @@ const Index = () => {
         const speech = new SpeechSynthesisUtterance(`Congratulations! You've completed the task: ${taskTitle}.`);
         window.speechSynthesis.speak(speech);
       }
+      
+      setTimeout(() => {
+        toast({
+          title: "Knowledge Updated",
+          description: "Task knowledge has been integrated into the MeTTa system. Check Analytics tab to see how this affects future tasks.",
+          action: (
+            <Button 
+              onClick={() => setActiveTab("metta")}
+              size="sm" 
+              className="bg-qwix-purple"
+            >
+              View
+            </Button>
+          ),
+        });
+      }, 1500);
     }
     
     toast({

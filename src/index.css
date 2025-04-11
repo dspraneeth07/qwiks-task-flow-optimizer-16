@@ -34,6 +34,10 @@
     --ring: 255 85% 74%;
 
     --radius: 0.5rem;
+    
+    /* Fixed background colors for dialog/modals in light mode */
+    --dialog-background: #ffffff;
+    --dialog-border: #e5e5e5;
   }
 
   .dark {
@@ -64,6 +68,10 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
+    /* Fixed background colors for dialog/modals in dark mode */
+    --dialog-background: #1e1e1e;
+    --dialog-border: #333333;
   }
 }
 
@@ -80,6 +88,23 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold;
   }
+}
+
+/* Fix dialog/popover backgrounds in light mode */
+.bg-popover {
+  background-color: var(--dialog-background) !important;
+  border-color: var(--dialog-border) !important;
+}
+
+/* Style fixes for form dialogs */
+[data-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+[data-dialog-content] {
+  background-color: var(--dialog-background) !important;
+  border: 1px solid var(--dialog-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Custom animations */
@@ -104,3 +129,52 @@
     stroke-dashoffset: 1000;
   }
 }
+
+/* Fix for recharts labels in light mode */
+.recharts-text {
+  fill: var(--foreground) !important;
+  font-size: 12px !important;
+}
+
+/* Tooltip styling for charts */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-default-tooltip {
+  background-color: var(--dialog-background) !important;
+  border: 1px solid var(--dialog-border) !important;
+  padding: 10px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Improve axis labels */
+.recharts-cartesian-axis-tick-value {
+  font-weight: 500 !important;
+  font-size: 11px !important;
+}
+
+/* Automatic knowledge transfer between tasks (SingularityNET feature) */
+.knowledge-transfer-path {
+  stroke: #21d0b2;
+  stroke-width: 2;
+  stroke-dasharray: 2, 2;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    stroke-opacity: 0.3;
+    stroke-width: 1;
+  }
+  50% {
+    stroke-opacity: 1;
+    stroke-width: 3;
+  }
+  100% {
+    stroke-opacity: 0.3;
+    stroke-width: 1;
+  }
+}
+

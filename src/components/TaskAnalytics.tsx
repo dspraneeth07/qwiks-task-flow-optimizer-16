@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Task, TaskStats } from "../types/task";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -22,18 +21,15 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
     );
   }
   
-  // Calculate task statistics
   const completedTasks = tasks.filter(t => t.completed);
   const incompleteTasks = tasks.filter(t => !t.completed);
   const overdueTasks = tasks.filter(t => !t.completed && t.deadline && t.deadline < new Date());
   
-  // Calculate real total times
   const totalEstimatedTime = completedTasks.reduce((acc, task) => acc + (task.estimatedTime || 0), 0);
   const totalActualTime = completedTasks.reduce((acc, task) => acc + (task.actualTime || 0), 0);
   
   const completionRate = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
   
-  // Calculate average completion time (difference between createdAt and completedAt)
   const avgCompletionTimeHours = completedTasks.length > 0 
     ? completedTasks.reduce((acc, task) => {
         if (!task.completedAt) return acc;
@@ -41,21 +37,18 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
       }, 0) / completedTasks.length
     : 0;
 
-  // Priority distribution data for chart with improved labeling  
   const priorityData = [
     { name: "High Priority", value: tasks.filter(t => t.priority === 'high').length, color: "#ea384c", id: "high" },
     { name: "Medium Priority", value: tasks.filter(t => t.priority === 'medium').length, color: "#0EA5E9", id: "medium" },
     { name: "Low Priority", value: tasks.filter(t => t.priority === 'low').length, color: "#22c55e", id: "low" },
   ];
   
-  // Status distribution data for chart with improved labeling
   const statusData = [
     { name: "Completed Tasks", value: completedTasks.length, color: "#22c55e", id: "completed" },
     { name: "In Progress", value: incompleteTasks.length - overdueTasks.length, color: "#0EA5E9", id: "inprogress" },
     { name: "Overdue Tasks", value: overdueTasks.length, color: "#ea384c", id: "overdue" },
   ];
   
-  // Tags distribution
   const tagCounts: Record<string, number> = {};
   tasks.forEach(task => {
     if (task.tags && task.tags.length > 0) {
@@ -73,25 +66,33 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
       color: ["#9b87f5", "#0EA5E9", "#22c55e", "#ea384c", "#F97316"][index % 5]
     }));
   
-  // Time comparison data (estimated vs actual) for completed tasks with both times
   const timeComparisonData = completedTasks
     .filter(task => task.estimatedTime && task.actualTime)
     .map(task => ({
-      name: task.title.length > 10 ? task.title.substring(0, 10) + '...' : task.title,
+      name: task.title.length > 8 ? task.title.substring(0, 8) + '...' : task.title,
       estimated: task.estimatedTime,
       actual: task.actualTime,
       fullTitle: task.title
     }))
-    .slice(0, 5); // Only show the 5 most recent for clarity
+    .slice(0, 5);
   
-  // Improved custom pie chart label renderer that avoids text overlap
+  const customTooltipFormatter = (value: any, name: any, props: any) => {
+    return [`${value} minutes`, name === 'estimated' ? 'Estimated Time' : 'Actual Time'];
+  };
+  
+  const customLabelFormatter = (label: any, payload: any) => {
+    if (payload && payload.length > 0 && payload[0].payload.fullTitle) {
+      return payload[0].payload.fullTitle;
+    }
+    return label;
+  };
+  
   const renderCustomizedPieLabel = ({ name, percent }: any) => {
     return percent > 0.1 ? `${name}: ${(percent * 100).toFixed(0)}%` : '';
   };
   
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {/* Overview Card */}
       <Card className="shadow-sm dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -146,7 +147,6 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
         </CardContent>
       </Card>
       
-      {/* Time Efficiency Card (New) */}
       <Card className="shadow-sm dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -193,7 +193,6 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
         </CardContent>
       </Card>
       
-      {/* Priority Distribution - Improved layout */}
       <Card className="shadow-sm dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -236,7 +235,6 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
         </CardContent>
       </Card>
       
-      {/* Task Status - Improved layout */}
       <Card className="shadow-sm dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -279,7 +277,6 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
         </CardContent>
       </Card>
       
-      {/* Tag Distribution - New chart to fill empty space */}
       {tagData.length > 0 && (
         <Card className="shadow-sm md:col-span-2 dark:bg-gray-800">
           <CardHeader>
@@ -317,7 +314,6 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
         </Card>
       )}
       
-      {/* Time Comparison - Fixed layout */}
       {timeComparisonData.length > 0 && (
         <Card className="shadow-sm md:col-span-2 dark:bg-gray-800">
           <CardHeader>
@@ -336,22 +332,27 @@ const TaskAnalytics = ({ tasks, timeEfficiency }: TaskAnalyticsProps) => {
                     textAnchor="end" 
                     height={70} 
                     tickMargin={10}
-                    tick={{ fill: 'var(--foreground)' }}
+                    tick={{ fill: 'var(--foreground)', fontSize: 12, fontWeight: 'bold' }}
                   />
                   <YAxis 
-                    label={{ value: 'Minutes', angle: -90, position: 'insideLeft', style: { fill: 'var(--foreground)' } }}
+                    label={{ 
+                      value: 'Minutes', 
+                      angle: -90, 
+                      position: 'insideLeft', 
+                      style: { fill: 'var(--foreground)', fontWeight: 'bold' } 
+                    }}
                     tick={{ fill: 'var(--foreground)' }}
                   />
                   <Tooltip 
-                    formatter={(value: number) => [`${value} minutes`, '']}
-                    labelFormatter={(name, payload) => {
-                      if (payload && payload.length > 0) {
-                        // @ts-ignore
-                        return payload[0].payload.fullTitle;
-                      }
-                      return name;
+                    formatter={customTooltipFormatter}
+                    labelFormatter={customLabelFormatter}
+                    contentStyle={{ 
+                      backgroundColor: 'var(--dialog-background)', 
+                      border: '1px solid var(--dialog-border)',
+                      borderRadius: '8px', 
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      color: 'var(--foreground)'
                     }}
-                    contentStyle={{ background: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '15px' }}/>
                   <Bar dataKey="estimated" fill="#9b87f5" name="Estimated Time" />
