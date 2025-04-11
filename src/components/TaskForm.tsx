@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, ClockIcon, InfoCircleIcon, TagIcon } from 'lucide-react';
+import { CalendarIcon, ClockIcon, Info, TagIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Task, TaskPriority } from '../types/task';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -228,7 +227,7 @@ const TaskForm = ({ isOpen, onClose, onSave, editingTask, tasks }: TaskFormProps
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <InfoCircleIcon className="h-4 w-4 text-gray-400 cursor-help" />
+                      <Info className="h-4 w-4 text-gray-400 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-sm max-w-xs">
