@@ -1,0 +1,13 @@
+
+# Netlify configuration file
+
+# The following redirect rule tells Netlify to redirect any non-matched path to index.html
+# This enables client-side routing to work correctly even when users refresh or directly access URLs
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
