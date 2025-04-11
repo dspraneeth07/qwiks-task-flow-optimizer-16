@@ -1,9 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { BrainIcon, GitMergeIcon, CalendarIcon, BoltIcon, BarChart4Icon, NetworkIcon } from 'lucide-react';
+import { BrainIcon, GitMergeIcon, CalendarIcon, BoltIcon, BarChart4Icon, NetworkIcon, Github } from 'lucide-react';
 
 const technologies = [
   {
