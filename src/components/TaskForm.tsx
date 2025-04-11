@@ -51,7 +51,6 @@ const TaskForm = ({ isOpen, onClose, onSave, editingTask, tasks }: TaskFormProps
   const [showCalendar, setShowCalendar] = useState(false);
   const [customTime, setCustomTime] = useState(false);
   
-  // Reset form when editing task changes
   useEffect(() => {
     if (editingTask) {
       setTitle(editingTask.title);
@@ -63,7 +62,6 @@ const TaskForm = ({ isOpen, onClose, onSave, editingTask, tasks }: TaskFormProps
       setTags(editingTask.tags || []);
       setCustomTime(false);
     } else {
-      // Clear form for new task
       setTitle('');
       setDescription('');
       setPriority('medium');
