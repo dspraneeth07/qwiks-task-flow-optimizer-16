@@ -12,9 +12,20 @@ export interface Task {
   estimatedTime?: number; // In minutes
   createdAt: Date;
   completedAt?: Date;
+  tags?: string[]; // New: Added tags for categorization
+  actualTime?: number; // New: Time actually spent on the task (in minutes)
 }
 
 export interface TaskLink {
   source: string; // Source task ID
   target: string; // Target task ID
+}
+
+// New: Task statistics for analytics
+export interface TaskStats {
+  totalTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  upcomingDeadlines: number;
+  avgCompletionTime: number;
 }

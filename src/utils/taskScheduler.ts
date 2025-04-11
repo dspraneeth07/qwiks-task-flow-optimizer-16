@@ -1,3 +1,4 @@
+
 import { Task } from "../types/task";
 
 // Check if a task can be started based on its dependencies
@@ -39,6 +40,11 @@ export const calculateTaskPriority = (task: Task): number => {
     // As deadline approaches, this factor increases significantly
     const deadlineFactor = Math.max(0, 50 - daysUntilDeadline * 5);
     score += deadlineFactor;
+    
+    // Add urgency factor for very close deadlines (within 24 hours)
+    if (daysUntilDeadline < 1) {
+      score += 25;
+    }
   }
   
   // Estimated time factor - shorter tasks get slight priority
@@ -47,6 +53,10 @@ export const calculateTaskPriority = (task: Task): number => {
     const timeFactor = Math.max(0, 10 - (task.estimatedTime / 60));
     score += timeFactor;
   }
+  
+  // New: Consider "ready to start" tasks (no blocking dependencies)
+  const readyBonus = task.dependencies.length === 0 ? 15 : 0;
+  score += readyBonus;
   
   return score;
 };
@@ -109,4 +119,45 @@ export const getDependencyLinks = (tasks: Task[]) => {
   });
   
   return links;
+};
+
+// New: Calculate current workload distribution
+export const calculateWorkloadDistribution = (tasks: Task[]): Record<string, number> => {
+  const workload: Record<string, number> = {
+    high: 0,
+    medium: 0,
+    low: 0
+  };
+  
+  const incompleteTasks = tasks.filter(task => !task.completed);
+  
+  incompleteTasks.forEach(task => {
+    workload[task.priority] += task.estimatedTime || 30;
+  });
+  
+  return workload;
+};
+
+// New: Estimate completion dates based on average completion rate
+export const estimateCompletionDates = (tasks: Task[], avgTasksPerDay: number): Record<string, Date> => {
+  const estimates: Record<string, Date> = {};
+  const incompleteTasks = tasks.filter(task => !task.completed);
+  const sortedTasks = getOptimizedTaskOrder(incompleteTasks);
+  
+  // Calculate how many days each task might take
+  let currentDate = new Date();
+  let tasksForToday = avgTasksPerDay;
+  
+  sortedTasks.forEach(task => {
+    if (tasksForToday <= 0) {
+      // Move to next day
+      currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000);
+      tasksForToday = avgTasksPerDay;
+    }
+    
+    estimates[task.id] = new Date(currentDate);
+    tasksForToday--;
+  });
+  
+  return estimates;
 };

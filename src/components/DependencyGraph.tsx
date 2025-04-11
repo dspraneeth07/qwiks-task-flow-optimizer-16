@@ -1,6 +1,8 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Task, TaskLink } from '../types/task';
+import { Button } from '@/components/ui/button';
+import { ZoomInIcon, ZoomOutIcon, RefreshCwIcon } from 'lucide-react';
 
 interface DependencyGraphProps {
   tasks: Task[];
@@ -9,6 +11,10 @@ interface DependencyGraphProps {
 
 const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
   // Convert tasks to nodes for visualization
   const nodes = tasks.map(task => ({
@@ -17,6 +23,39 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
     completed: task.completed,
     priority: task.priority
   }));
+  
+  const handleZoomIn = () => {
+    setScale(prev => Math.min(prev + 0.1, 2));
+  };
+  
+  const handleZoomOut = () => {
+    setScale(prev => Math.max(prev - 0.1, 0.5));
+  };
+  
+  const handleReset = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+  
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 0) { // Left mouse button
+      setIsDragging(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    }
+  };
+  
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging) {
+      const dx = e.clientX - dragStart.x;
+      const dy = e.clientY - dragStart.y;
+      setPosition(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+      setDragStart({ x: e.clientX, y: e.clientY });
+    }
+  };
+  
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
   
   useEffect(() => {
     if (links.length === 0 || !svgRef.current) return;
@@ -46,6 +85,11 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
       const y = centerY + radius * Math.sin(angle);
       nodePositions[node.id] = { x, y };
     });
+    
+    // Create a group for panning and zooming
+    const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    mainGroup.setAttribute('transform', `translate(${position.x}, ${position.y}) scale(${scale})`);
+    svg.appendChild(mainGroup);
     
     // Draw the links (arrows) first so they're behind nodes
     links.forEach(link => {
@@ -90,10 +134,10 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
       
       const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
       defs.appendChild(arrowMarker);
-      svg.appendChild(defs);
+      mainGroup.appendChild(defs);
       
       path.setAttribute('marker-end', `url(#arrowhead-${link.source}-${link.target})`);
-      svg.appendChild(path);
+      mainGroup.appendChild(path);
     });
     
     // Draw the nodes
@@ -111,6 +155,16 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
       circle.setAttribute('fill', node.completed ? '#f1f0fb' : '#9b87f5');
       circle.setAttribute('stroke', node.completed ? '#ddd' : '#7E69AB');
       circle.setAttribute('stroke-width', '2');
+      circle.classList.add('hover-scale');
+      
+      // Add a hover effect
+      circle.addEventListener('mouseover', () => {
+        circle.setAttribute('stroke-width', '4');
+      });
+      
+      circle.addEventListener('mouseout', () => {
+        circle.setAttribute('stroke-width', '2');
+      });
       
       // Add task title text
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -154,18 +208,48 @@ const DependencyGraph = ({ tasks, links }: DependencyGraphProps) => {
       
       g.appendChild(circle);
       g.appendChild(text);
-      svg.appendChild(g);
+      mainGroup.appendChild(g);
     });
     
-  }, [tasks, links, nodes]);
+  }, [tasks, links, nodes, scale, position]);
   
   return (
     <div className="w-full h-full relative">
+      <div className="absolute top-2 right-2 flex gap-2 z-10">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white" 
+          onClick={handleZoomIn}
+        >
+          <ZoomInIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white" 
+          onClick={handleZoomOut}
+        >
+          <ZoomOutIcon className="h-4 w-4" />
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white" 
+          onClick={handleReset}
+        >
+          <RefreshCwIcon className="h-4 w-4" />
+        </Button>
+      </div>
       <svg 
         ref={svgRef} 
-        className="w-full h-full" 
+        className="w-full h-full cursor-grab" 
         viewBox="0 0 600 400"
         preserveAspectRatio="xMidYMid meet"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       />
     </div>
   );
