@@ -1,8 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { BrainIcon, GitMergeIcon, CalendarIcon, BoltIcon, BarChart4Icon, NetworkIcon, Github } from 'lucide-react';
+import { BrainIcon, GitMergeIcon, CalendarIcon, BoltIcon, BarChart4Icon, NetworkIcon, Github, ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const technologies = [
   {
@@ -96,6 +99,15 @@ const About = () => {
         tasksCount={0}
         completedCount={0}
       />
+      
+      <div className="mb-4">
+        <Link to="/">
+          <Button variant="outline" className="flex items-center gap-2">
+            <ArrowLeft size={16} />
+            Back to Tasks
+          </Button>
+        </Link>
+      </div>
       
       <div className="my-8">
         <Card className="shadow-sm bg-white dark:bg-gray-800">
